@@ -225,8 +225,8 @@ namespace dsm_testing
                         (a.Race?.FormKey.Equals(humanRaceFormKey.FormKey) ?? false) &&
                         (a.AttachParentSlots?.Any() ?? false) &&
                         (!a.MajorFlags.HasFlag(Armor.MajorFlag.NonPlayable)) &&
-                        (a.FormKey.ModKey.FileName.String.Equals("starfield.esm", StringComparison.OrdinalIgnoreCase)) &&
-                        (a.FormKey.ModKey.FileName.String.Equals("DarkStar_Manufacturing.esm", StringComparison.OrdinalIgnoreCase))
+                        (!a.FormKey.ModKey.FileName.String.Equals("starfield.esm", StringComparison.OrdinalIgnoreCase)) &&
+                        (!a.FormKey.ModKey.FileName.String.Equals("DarkStar_Manufacturing.esm", StringComparison.OrdinalIgnoreCase))
                         )
                     {
                         System.Console.WriteLine($"{a.EditorID} (at {armor}) cannot be constructed at a workbench but but (a) it's human (b) has attach parent slots (c) is marked playable");
