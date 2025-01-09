@@ -139,24 +139,10 @@ namespace dsm_testing
                 return;
             }
 
-            Dictionary<FormKey,IResourceGetter> resourceMap = new Dictionary<FormKey, IResourceGetter> ();
-
-            foreach (var resource in state.LoadOrder.PriorityOrder.WinningOverrides<IResourceGetter>())
-                resourceMap[resource.FormKey] = resource;
-
-            Dictionary<FormKey, IMiscItemGetter> miscItemMap = new Dictionary<FormKey, IMiscItemGetter>();
-
-            foreach (var miscItem in state.LoadOrder.PriorityOrder.WinningOverrides<IMiscItemGetter>())
-                miscItemMap[miscItem.FormKey] = miscItem;
-
             Dictionary<FormKey,IArmorGetter> armorMap = new Dictionary<FormKey, IArmorGetter> ();
 
             foreach (var armor in state.LoadOrder.PriorityOrder.WinningOverrides<IArmorGetter>())
                 armorMap[armor.FormKey] = armor;
-
-            var raceMap = new Dictionary<FormKey, IRaceGetter> ();
-            foreach (var race in state.LoadOrder.PriorityOrder.WinningOverrides<IRaceGetter>())
-                raceMap[race.FormKey] = race;
 
             if (!linkCache.TryResolve<IRaceGetter>("HumanRace", out var humanRace))
             {
