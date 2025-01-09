@@ -1,0 +1,14 @@
+{
+  "Nickname": "",
+  "Visibility": "Visible",
+  "OneLineDescription": "",
+  "LongDescription": "",
+  "PreferredAutoVersioning": "Default",
+  "RequiredMods": [
+    "cosplay_workbench.esm",
+    "DarkStar_Manufacturing.esm"
+  ],
+  "TargetedReleases": [
+    "Starfield"
+  ]
+}
