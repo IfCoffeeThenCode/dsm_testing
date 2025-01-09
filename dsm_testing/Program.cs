@@ -54,9 +54,10 @@ namespace dsm_testing
             {
                 return;
             }
-            var dsmHeadwear = state.LoadOrder.PriorityOrder.WinningOverrides<IKeywordGetter>()
-                .Where(r => r.EditorID?.Equals("ma_DSM_Headwear", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
+            if (!linkCache.TryResolve<IKeywordGetter>("ma_DSM_Headwear", out var dsmHeadwear))
+            {
+                return;
+            }
 
             // -------------------------------------------------------------------------------------------------
             // Patch apparel / clothing
@@ -66,9 +67,10 @@ namespace dsm_testing
             {
                 return;
             }
-            var dsmApparel = state.LoadOrder.PriorityOrder.WinningOverrides<IKeywordGetter>()
-                .Where(r => r.EditorID?.Equals("ma_DSM_Apparel", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
+            if (!linkCache.TryResolve<IKeywordGetter>("ma_DSM_Apparel", out var dsmApparel))
+            {
+                return;
+            }
 
             // -------------------------------------------------------------------------------------------------
             // Patch Neuroamps / Cyberware
@@ -78,9 +80,10 @@ namespace dsm_testing
             {
                 return;
             }
-            var dsmCyberware = state.LoadOrder.PriorityOrder.WinningOverrides<IKeywordGetter>()
-                .Where(r => r.EditorID?.Equals("ma_DSM_Cyberware", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
+            if (!linkCache.TryResolve<IKeywordGetter>("ma_DSM_Cyberware", out var dsmCyberware))
+            {
+                return;
+            }
 
             // -------------------------------------------------------------------------------------------------
             // Patch Packs
@@ -90,9 +93,10 @@ namespace dsm_testing
             {
                 return;
             }
-            var dsmBackpack = state.LoadOrder.PriorityOrder.WinningOverrides<IKeywordGetter>()
-                .Where(r => r.EditorID?.Equals("ma_DSM_Backpack", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
+            if (!linkCache.TryResolve<IKeywordGetter>("ma_DSM_Backpack", out var dsmBackpack))
+            {
+                return;
+            }
 
             // -------------------------------------------------------------------------------------------------
             // Patch Spacesuits
@@ -102,9 +106,10 @@ namespace dsm_testing
             {
                 return;
             }
-            var dsmSpacesuit = state.LoadOrder.PriorityOrder.WinningOverrides<IKeywordGetter>()
-                .Where(r => r.EditorID?.Equals("ma_DSM_Spacesuit", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
+            if (!linkCache.TryResolve<IKeywordGetter>("ma_DSM_Spacesuit", out var dsmSpacesuit))
+            {
+                return;
+            }
 
             // -------------------------------------------------------------------------------------------------
             // Patch Helmets
@@ -114,9 +119,10 @@ namespace dsm_testing
             {
                 return;
             }
-            var dsmHelmet = state.LoadOrder.PriorityOrder.WinningOverrides<IKeywordGetter>()
-                .Where(r => r.EditorID?.Equals("ma_DSM_Helmet", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
+            if (!linkCache.TryResolve<IKeywordGetter>("ma_DSM_Helmet", out var dsmHelmet))
+            {
+                return;
+            }
 
             //if (!Starfield.Keyword.ArmorTypeSpacesuitShowAlways.TryResolve(linkCache, out var always))
             //{
@@ -128,10 +134,10 @@ namespace dsm_testing
             // done with initial prep, let's find some stuff to patch...
             // -------------------------------------------------------------------------------------------------
 
-            var dsmIfCraftingForceQuality01 = state.LoadOrder.PriorityOrder.WinningOverrides<IKeywordGetter>()
-                .Where(r => r.EditorID?.Equals("if_Crafting_ForceQuality01", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
-            System.Console.WriteLine($"found DSM MkII instantiation filter keyword {dsmIfCraftingForceQuality01.FormKey}");
+            if (!linkCache.TryResolve<IKeywordGetter>("if_Crafting_ForceQuality01", out var dsmIfCraftingForceQuality01))
+            {
+                return;
+            }
 
             Dictionary<FormKey,IResourceGetter> resourceMap = new Dictionary<FormKey, IResourceGetter> ();
 
@@ -152,14 +158,10 @@ namespace dsm_testing
             foreach (var race in state.LoadOrder.PriorityOrder.WinningOverrides<IRaceGetter>())
                 raceMap[race.FormKey] = race;
 
-            var humanRaceFormKey = state.LoadOrder.PriorityOrder.WinningOverrides<IRaceGetter>()
-                .Select(r => new { r.EditorID, r.FormKey })
-                .Where(r => r.EditorID != null)
-                .Where(r => r.EditorID?.Equals("HumanRace", StringComparison.OrdinalIgnoreCase) ?? false)
-                .First();
-                
-            var humanRace = raceMap[humanRaceFormKey.FormKey];
-
+            if (!linkCache.TryResolve<IRaceGetter>("HumanRace", out var humanRace))
+            {
+                return;
+            }
 
             Dictionary<FormKey,FormKey> dsmFromVanillaIoMkII = new Dictionary<FormKey, FormKey> ();
             Dictionary<FormKey, IConstructibleObjectGetter> dsmRecipes = new Dictionary<FormKey, IConstructibleObjectGetter>();
@@ -222,7 +224,7 @@ namespace dsm_testing
                     var a = armorMap[armor];
                     //System.Console.WriteLine($"{armor} ({a.EditorID}) cannot be constructed at a workbench");
                     if (
-                        (a.Race?.FormKey.Equals(humanRaceFormKey.FormKey) ?? false) &&
+                        (a.Race?.FormKey.Equals(humanRace.FormKey) ?? false) &&
                         (a.AttachParentSlots?.Any() ?? false) &&
                         (!a.MajorFlags.HasFlag(Armor.MajorFlag.NonPlayable)) &&
                         (!a.FormKey.ModKey.FileName.String.Equals("starfield.esm", StringComparison.OrdinalIgnoreCase)) &&
