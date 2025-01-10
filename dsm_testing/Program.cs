@@ -139,11 +139,6 @@ namespace dsm_testing
                 return;
             }
 
-            Dictionary<FormKey,IArmorGetter> armorMap = new Dictionary<FormKey, IArmorGetter> ();
-
-            foreach (var armor in state.LoadOrder.PriorityOrder.WinningOverrides<IArmorGetter>())
-                armorMap[armor.FormKey] = armor;
-
             if (!linkCache.TryResolve<IRaceGetter>("HumanRace", out var humanRace))
             {
                 return;
@@ -192,31 +187,35 @@ namespace dsm_testing
             }
 
             var armorsWithRecipes = dsmFromVanillaIoMkII.Values.Union(vanillaRecipes.Keys);
-            var armorsWithoutRecipes = from armor in armorMap.Keys.Except(armorsWithRecipes) select armor;
-            if (armorsWithoutRecipes.Any() )
+
+            var armorsWithoutRecipes = state.LoadOrder.PriorityOrder.WinningOverrides<IArmorGetter>()
+                .Where(a => !armorsWithRecipes.Contains(a.FormKey));
+
+            foreach (var armor in armorsWithoutRecipes)
             {
-                //System.Console.WriteLine("found ARMO records without construction recipes");
-                foreach (var armor in armorsWithoutRecipes)
+                //System.Console.WriteLine($"{armor} ({a.EditorID}) cannot be constructed at a workbench");
+                if (
+                    (armor.Race?.FormKey.Equals(humanRace.FormKey) ?? false) &&
+                    (armor.AttachParentSlots?.Any() ?? false) &&
+                    (!armor.MajorFlags.HasFlag(Armor.MajorFlag.NonPlayable)) // &&
+                    //(!a.FormKey.ModKey.FileName.String.Equals("starfield.esm", StringComparison.OrdinalIgnoreCase)) &&
+                    //(!a.FormKey.ModKey.FileName.String.Equals("DarkStar_Manufacturing.esm", StringComparison.OrdinalIgnoreCase))
+                    )
                 {
-                    var a = armorMap[armor];
-                    //System.Console.WriteLine($"{armor} ({a.EditorID}) cannot be constructed at a workbench");
-                    if (
-                        (a.Race?.FormKey.Equals(humanRace.FormKey) ?? false) &&
-                        (a.AttachParentSlots?.Any() ?? false) &&
-                        (!a.MajorFlags.HasFlag(Armor.MajorFlag.NonPlayable)) &&
-                        (!a.FormKey.ModKey.FileName.String.Equals("starfield.esm", StringComparison.OrdinalIgnoreCase)) &&
-                        (!a.FormKey.ModKey.FileName.String.Equals("DarkStar_Manufacturing.esm", StringComparison.OrdinalIgnoreCase))
-                        )
-                    {
-                        System.Console.WriteLine($"{a.EditorID} (at {armor}) cannot be constructed at a workbench but but (a) it's human (b) has attach parent slots (c) is marked playable");
-                    }
+                    System.Console.WriteLine($"{armor.EditorID} (at {armor}) cannot be constructed at a workbench but but (a) it's human (b) has attach parent slots (c) is marked playable");
                 }
             }
 
             foreach (var pair in dsmFromVanillaIoMkII)
             {
-                var vanillaArmor = armorMap[pair.Key];
-                var mk2Armor = armorMap[pair.Value];
+                if (!linkCache.TryResolve<IArmorGetter>(pair.Key, out var vanillaArmor))
+                {
+                    continue;
+                }
+                if (!linkCache.TryResolve<IArmorGetter>(pair.Value, out var mk2Armor))
+                {
+                    continue;
+                }
 
                 if (!dsmRecipes[mk2Armor.FormKey].InstantiationFilterKeyword.Equals(dsmIfCraftingForceQuality01))
                 {
