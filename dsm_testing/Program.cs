@@ -139,11 +139,6 @@ namespace dsm_testing
                 return;
             }
 
-            if (!linkCache.TryResolve<IRaceGetter>("HumanRace", out var humanRace))
-            {
-                return;
-            }
-
             Dictionary<FormKey,FormKey> dsmFromVanillaIoMkII = new Dictionary<FormKey, FormKey> ();
             Dictionary<FormKey, IConstructibleObjectGetter> dsmRecipes = new Dictionary<FormKey, IConstructibleObjectGetter>();
             Dictionary<FormKey,List<FormKey>> vanillaRecipes = new Dictionary<FormKey, List<FormKey>> ();
@@ -186,6 +181,15 @@ namespace dsm_testing
                 }
             }
 
+            // -------------------------------------------------------------------------------------------------
+            // Are there any vanilla armors that can't be constructed at a workbench?
+            // -------------------------------------------------------------------------------------------------
+
+            if (!linkCache.TryResolve<IRaceGetter>("HumanRace", out var humanRace))
+            {
+                return;
+            }
+
             var armorsWithRecipes = dsmFromVanillaIoMkII.Values.Union(vanillaRecipes.Keys);
 
             var armorsWithoutRecipes = state.LoadOrder.PriorityOrder.WinningOverrides<IArmorGetter>()
@@ -205,6 +209,10 @@ namespace dsm_testing
                     System.Console.WriteLine($"{armor.EditorID} (at {armor}) cannot be constructed at a workbench but but (a) it's human (b) has attach parent slots (c) is marked playable");
                 }
             }
+
+            // -------------------------------------------------------------------------------------------------
+            // Let's make sure that everything looks good for DarkStar Manufacturing
+            // -------------------------------------------------------------------------------------------------
 
             foreach (var pair in dsmFromVanillaIoMkII)
             {
