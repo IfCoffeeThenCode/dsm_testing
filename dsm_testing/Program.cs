@@ -153,48 +153,39 @@ namespace dsm_testing
             Dictionary<FormKey, IConstructibleObjectGetter> dsmRecipes = new Dictionary<FormKey, IConstructibleObjectGetter>();
             Dictionary<FormKey,List<FormKey>> vanillaRecipes = new Dictionary<FormKey, List<FormKey>> ();
 
-            foreach (var constructRecipe in state.LoadOrder.PriorityOrder.WinningOverrides<IConstructibleObjectGetter>()
-                .Select(r => new {
-                    recipe = r,
-                    eid = r.EditorID,
-                    createdObject = r.CreatedObject,
-                    outputCount = r.AmountProduced,
-                    inputObjects = r.ConstructableComponents,
-                    workbenchKeyword = r.WorkbenchKeyword.TryResolve(linkCache),
-                    formKey = r.FormKey,
-                })
-                .Where(r => r.workbenchKeyword != null)
-                .Where(r => r.workbenchKeyword?.FormKey == Starfield.Keyword.WorkbenchIndustrialKeyword?.FormKey)
-                .Where(r => !r.eid.IsNullOrEmpty())
-                )
+            foreach (var constructRecipe in state.LoadOrder.PriorityOrder.WinningOverrides<IConstructibleObjectGetter>())
             {
-                if (constructRecipe.inputObjects == null) {
-                    System.Console.WriteLine($"found recipe {constructRecipe.eid} with no input components");
+                if (!constructRecipe.WorkbenchKeyword.TryResolve(linkCache, out var workbenchKeyword) || !workbenchKeyword.Equals(Starfield.Keyword.WorkbenchIndustrialKeyword))
+                {
+                    continue;
+                }
+
+                if (constructRecipe.ConstructableComponents == null) {
+                    System.Console.WriteLine($"found recipe {constructRecipe.EditorID} with no input components");
                     continue; 
                 }
 
                 if (
-                    constructRecipe.inputObjects.Count == 1 &&
-                    armorMap.ContainsKey(constructRecipe.createdObject.FormKey) && armorMap.ContainsKey(constructRecipe.inputObjects[0].Component.FormKey)
+                    constructRecipe.ConstructableComponents.Count == 1 &&
+                    linkCache.TryResolve<IArmorGetter>(constructRecipe.CreatedObject.FormKey, out var createdObject) &&
+                    linkCache.TryResolve<IArmorGetter>(constructRecipe.ConstructableComponents[0].Component.FormKey, out var component)
                     )
                 {
-                    dsmFromVanillaIoMkII.Add(constructRecipe.inputObjects[0].Component.FormKey, constructRecipe.createdObject.FormKey);
-                    dsmRecipes.Add(constructRecipe.createdObject.FormKey, constructRecipe.recipe);
-                    //System.Console.WriteLine($"enhancer? Goes from armor from {armorMap[constructRecipe.inputObjects[0].Component.FormKey].EditorID} to {armorMap[constructRecipe.createdObject.FormKey].EditorID}");
-                    //System.Console.WriteLine($"recipe CIFK: {constructRecipe.recipe.InstantiationFilterKeyword}");
+                    dsmFromVanillaIoMkII.Add(constructRecipe.ConstructableComponents[0].Component.FormKey, constructRecipe.CreatedObject.FormKey);
+                    dsmRecipes.Add(constructRecipe.CreatedObject.FormKey, constructRecipe);
                 }
                 else
                 {
-                    foreach (var input in constructRecipe.inputObjects)
+                    foreach (var input in constructRecipe.ConstructableComponents)
                     {
-                        if (vanillaRecipes.ContainsKey(constructRecipe.createdObject.FormKey))
+                        if (vanillaRecipes.ContainsKey(constructRecipe.CreatedObject.FormKey))
                         {
-                            vanillaRecipes[constructRecipe.createdObject.FormKey].Add(input.Component.FormKey);
+                            vanillaRecipes[constructRecipe.CreatedObject.FormKey].Add(input.Component.FormKey);
                         }
                         else
                         {
-                            vanillaRecipes.Add(constructRecipe.createdObject.FormKey, new List<FormKey>());
-                            vanillaRecipes[constructRecipe.createdObject.FormKey].Add(input.Component.FormKey);
+                            vanillaRecipes.Add(constructRecipe.CreatedObject.FormKey, new List<FormKey>());
+                            vanillaRecipes[constructRecipe.CreatedObject.FormKey].Add(input.Component.FormKey);
                         }
                     }
                 }
@@ -230,6 +221,9 @@ namespace dsm_testing
                 if (!dsmRecipes[mk2Armor.FormKey].InstantiationFilterKeyword.Equals(dsmIfCraftingForceQuality01))
                 {
                     System.Console.WriteLine($"** WARNING ** found DSM MkII recipe {dsmRecipes[mk2Armor.FormKey].EditorID} with unexpected instantiation filter keyword {dsmRecipes[mk2Armor.FormKey].InstantiationFilterKeyword}");
+                    var overwrite = state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(dsmRecipes[mk2Armor.FormKey]);
+                    overwrite.InstantiationFilterKeyword.SetTo(dsmIfCraftingForceQuality01);
+                    System.Console.WriteLine($"updated DSM MkII recipe {dsmRecipes[mk2Armor.FormKey].EditorID} with instantiation filter keyword {dsmIfCraftingForceQuality01}");
                 }
                 else
                 {

@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mutagen.Bethesda.Starfield" Version="0.49.0-alpha.74" />
+		<PackageReference Include="Mutagen.Bethesda.Starfield" Version="0.49.0-alpha.77" />
 		<PackageReference Include="Mutagen.Bethesda.FormKeys.Starfield" Version="3.4.0" />
 		<PackageReference Include="Mutagen.Bethesda.Synthesis" Version="0.33.0-pre-release.2" />
 	</ItemGroup>
